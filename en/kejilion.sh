@@ -1,5 +1,5 @@
 #!/bin/bash
-sh_v="4.1.5"
+sh_v="4.1.6"
 
 
 gl_hui='\e[37m'
@@ -1771,7 +1771,7 @@ check_waf_status() {
 
 
 check_cf_mode() {
-	if [ -f "/path/to/fail2ban/config/fail2ban/action.d/cloudflare-docker.conf" ]; then
+	if [ -f "/etc/fail2ban/action.d/cloudflare-docker.conf" ]; then
 		CFmessage=" cf模式已开启"
 	else
 		CFmessage=""
@@ -1985,19 +1985,11 @@ nginx_gzip() {
 web_security() {
 	  send_stats "LDNMP environment defense"
 	  while true; do
+		check_f2b_status
 		check_waf_status
 		check_cf_mode
-		if [ -x "$(command -v fail2ban-client)" ] ; then
-			clear
-			remove fail2ban
-			rm -rf /etc/fail2ban
-		else
 			  clear
-			  rm -f /path/to/fail2ban/config/fail2ban/jail.d/sshd.conf > /dev/null 2>&1
-			  docker exec -it fail2ban fail2ban-client reload > /dev/null 2>&1
-			  docker_name="fail2ban"
-			  check_docker_app
-			  echo -e "Server website defense program${check_docker}${gl_lv}${CFmessage}${waf_status}${gl_bai}"
+			  echo -e "Server website defense program${check_f2b_status}${gl_lv}${CFmessage}${waf_status}${gl_bai}"
 			  echo "------------------------"
 			  echo "1. Install the defense program"
 			  echo "------------------------"
@@ -2019,11 +2011,11 @@ web_security() {
 			  case $sub_choice in
 				  1)
 					  f2b_install_sshd
-					  cd /path/to/fail2ban/config/fail2ban/filter.d
+					  cd /etc/fail2ban/filter.d
 					  curl -sS -O ${gh_proxy}raw.githubusercontent.com/kejilion/sh/main/fail2ban-nginx-cc.conf
-					  cd /path/to/fail2ban/config/fail2ban/jail.d/
+					  cd /etc/fail2ban/jail.d/
 					  curl -sS -O ${gh_proxy}raw.githubusercontent.com/kejilion/config/main/fail2ban/nginx-docker-cc.conf
-					  sed -i "/cloudflare/d" /path/to/fail2ban/config/fail2ban/jail.d/nginx-docker-cc.conf
+					  sed -i "/cloudflare/d" /etc/fail2ban/jail.d/nginx-docker-cc.conf
 					  f2b_status
 					  ;;
 				  5)
@@ -2065,28 +2057,29 @@ web_security() {
 					  ;;
 
 				  7)
-					  docker exec -it fail2ban fail2ban-client status
+					  fail2ban-client status
 					  ;;
 				  8)
-					  tail -f /path/to/fail2ban/config/log/fail2ban/fail2ban.log
+					  tail -f /var/log/fail2ban.log
 
 					  ;;
 				  9)
-					  docker rm -f fail2ban
-					  rm -rf /path/to/fail2ban
+					  remove fail2ban
+					  rm -rf /etc/fail2ban
 					  crontab -l | grep -v "CF-Under-Attack.sh" | crontab - 2>/dev/null
 					  echo "Fail2Ban defense program has been uninstalled"
+					  break
 					  ;;
 
 				  11)
 					  install nano
-					  nano /path/to/fail2ban/config/fail2ban/jail.d/nginx-docker-cc.conf
+					  nano /etc/fail2ban/jail.d/nginx-docker-cc.conf
 					  f2b_status
 					  break
 					  ;;
 
 				  12)
-					  docker exec -it fail2ban fail2ban-client unban --all
+					  fail2ban-client unban --all
 					  ;;
 
 				  21)
@@ -2099,14 +2092,14 @@ web_security() {
 					  wget -O /home/web/conf.d/default.conf ${gh_proxy}raw.githubusercontent.com/kejilion/nginx/main/default11.conf
 					  docker exec nginx nginx -s reload
 
-					  cd /path/to/fail2ban/config/fail2ban/jail.d/
+					  cd /etc/fail2ban/jail.d/
 					  curl -sS -O ${gh_proxy}raw.githubusercontent.com/kejilion/config/main/fail2ban/nginx-docker-cc.conf
 
-					  cd /path/to/fail2ban/config/fail2ban/action.d
+					  cd /etc/fail2ban/action.d
 					  curl -sS -O ${gh_proxy}raw.githubusercontent.com/kejilion/config/main/fail2ban/cloudflare-docker.conf
 
-					  sed -i "s/kejilion@outlook.com/$cfuser/g" /path/to/fail2ban/config/fail2ban/action.d/cloudflare-docker.conf
-					  sed -i "s/APIKEY00000/$cftoken/g" /path/to/fail2ban/config/fail2ban/action.d/cloudflare-docker.conf
+					  sed -i "s/kejilion@outlook.com/$cfuser/g" /etc/fail2ban/action.d/cloudflare-docker.conf
+					  sed -i "s/APIKEY00000/$cftoken/g" /etc/fail2ban/action.d/cloudflare-docker.conf
 					  f2b_status
 
 					  echo "Cloudflare mode is configured to view intercept records in the cf background, site-security-events"
@@ -2171,7 +2164,6 @@ web_security() {
 					  break
 					  ;;
 			  esac
-		fi
 	  break_end
 	  done
 }
@@ -3017,52 +3009,30 @@ tmux new -d -s "$base_name-$tmuxd_ID" "$tmuxd"
 
 
 f2b_status() {
-	 docker exec -it fail2ban fail2ban-client reload
+	 fail2ban-client reload
 	 sleep 3
-	 docker exec -it fail2ban fail2ban-client status
+	 fail2ban-client status
 }
 
 f2b_status_xxx() {
-	docker exec -it fail2ban fail2ban-client status $xxx
+	fail2ban-client status $xxx
+}
+
+check_f2b_status() {
+	if command -v fail2ban-client >/dev/null 2>&1; then
+		check_f2b_status="${gl_lv}已安装${gl_bai}"
+	else
+		check_f2b_status="${gl_hui}未安装${gl_bai}"
+	fi
 }
 
 f2b_install_sshd() {
 
-	docker run -d \
-		--name=fail2ban \
-		--net=host \
-		--cap-add=NET_ADMIN \
-		--cap-add=NET_RAW \
-		-e PUID=1000 \
-		-e PGID=1000 \
-		-e TZ=Etc/UTC \
-		-e VERBOSITY=-vv \
-		-v /path/to/fail2ban/config:/config \
-		-v /var/log:/var/log:ro \
-		-v /home/web/log/nginx/:/remotelogs/nginx:ro \
-		--restart=always \
-		lscr.io/linuxserver/fail2ban:latest
+	docker rm -f fail2ban >/dev/null 2>&1
+	install fail2ban
+	start fail2ban
+	enable fail2ban
 
-	sleep 3
-	if grep -q 'Alpine' /etc/issue; then
-		cd /path/to/fail2ban/config/fail2ban/filter.d
-		curl -sS -O ${gh_proxy}raw.githubusercontent.com/kejilion/config/main/fail2ban/alpine-sshd.conf
-		curl -sS -O ${gh_proxy}raw.githubusercontent.com/kejilion/config/main/fail2ban/alpine-sshd-ddos.conf
-		cd /path/to/fail2ban/config/fail2ban/jail.d/
-		curl -sS -O ${gh_proxy}raw.githubusercontent.com/kejilion/config/main/fail2ban/alpine-ssh.conf
-	elif command -v dnf &>/dev/null; then
-		cd /path/to/fail2ban/config/fail2ban/jail.d/
-		curl -sS -O ${gh_proxy}raw.githubusercontent.com/kejilion/config/main/fail2ban/centos-ssh.conf
-	else
-		install rsyslog
-		systemctl start rsyslog
-		systemctl enable rsyslog
-		cd /path/to/fail2ban/config/fail2ban/jail.d/
-		curl -sS -O ${gh_proxy}raw.githubusercontent.com/kejilion/config/main/fail2ban/linux-ssh.conf
-		systemctl restart rsyslog
-	fi
-
-	rm -f /path/to/fail2ban/config/fail2ban/jail.d/sshd.conf
 }
 
 f2b_sshd() {
@@ -3949,7 +3919,7 @@ frps_panel() {
 
 			8)
 				send_stats "Block IP access"
-				echo "If you have accessed the anti-generation domain name, you can use this function to block IP+ port access, which is more secure."
+				echo "If you have accessed the anti-generation domain name, use this function to block IP+ port access, which is more secure."
 				read -e -p "Please enter the port you need to block:" frps_port
 				block_host_port "$frps_port" "$ipv4_address"
 				;;
@@ -7765,7 +7735,8 @@ linux_Oracle() {
 
 		  4)
 			  clear
-			  echo "This feature is in the development stage, so stay tuned!"
+			  send_stats "Detective R start script"
+			  bash <(wget -qO- ${gh_proxy}github.com/Yohann0617/oci-helper/releases/latest/download/sh_oci-helper_install.sh)
 			  ;;
 		  5)
 			  clear
@@ -8384,7 +8355,7 @@ linux_ldnmp() {
 
 	  docker run -d \
 		--name bitwarden \
-		--restart always \
+		--restart=always \
 		-p 3280:80 \
 		-v /home/web/html/$yuming/bitwarden/data:/data \
 		vaultwarden/server
@@ -8405,7 +8376,7 @@ linux_ldnmp() {
 	  install_ssltls
 	  certs_status
 
-	  docker run -d --name halo --restart always -p 8010:8090 -v /home/web/html/$yuming/.halo2:/root/.halo2 halohub/halo:2
+	  docker run -d --name halo --restart=always -p 8010:8090 -v /home/web/html/$yuming/.halo2:/root/.halo2 halohub/halo:2
 	  duankou=8010
 	  reverse_proxy
 
@@ -8890,7 +8861,7 @@ while true; do
 	  echo -e "${gl_kjlan}93.  ${color93}Dufs minimalist static file server${gl_kjlan}94.  ${color94}Gopeed high-speed download tool"
 	  echo -e "${gl_kjlan}95.  ${color95}paperless document management platform${gl_kjlan}96.  ${color96}2FAuth self-hosted two-step validator"
 	  echo -e "${gl_kjlan}97.  ${color97}WireGuard networking (server side)${gl_kjlan}98.  ${color98}WireGuard networking (client)"
-	  echo -e "${gl_kjlan}99.  ${color99}DSM Synology Virtual Machine"
+	  echo -e "${gl_kjlan}99.  ${color99}DSM Synology Virtual Machine${gl_kjlan}100. ${color100}Syncthing point-to-point file synchronization tool"
 	  echo -e "${gl_kjlan}------------------------"
 	  echo -e "${gl_kjlan}b.   ${gl_bai}Back up all application data${gl_kjlan}r.   ${gl_bai}Restore all application data"
 	  echo -e "${gl_kjlan}------------------------"
@@ -9499,7 +9470,7 @@ while true; do
 
 		docker_rum() {
 
-			docker run -d --name looking-glass --restart always -p ${docker_port}:80 wikihostinc/looking-glass-server
+			docker run -d --name looking-glass --restart=always -p ${docker_port}:80 wikihostinc/looking-glass-server
 
 		}
 
@@ -9527,7 +9498,7 @@ while true; do
 				-p 53:53/tcp \
 				-p 53:53/udp \
 				-p ${docker_port}:3000/tcp \
-				--restart always \
+				--restart=always \
 				adguard/adguardhome
 
 
@@ -9654,7 +9625,7 @@ while true; do
 				-p ${docker_port}:9000 \
 				-v /var/run/docker.sock:/var/run/docker.sock \
 				-v /home/docker/portainer:/data \
-				--restart always \
+				--restart=always \
 				portainer/portainer
 
 		}
@@ -9678,7 +9649,7 @@ while true; do
 
 		docker_rum() {
 
-			docker run -d -p ${docker_port}:8080 -v /home/docker/vscode-web:/home/coder/.local/share/code-server --name vscode-web --restart always codercom/code-server
+			docker run -d -p ${docker_port}:8080 -v /home/docker/vscode-web:/home/coder/.local/share/code-server --name vscode-web --restart=always codercom/code-server
 
 		}
 
@@ -9727,7 +9698,7 @@ while true; do
 
 		docker_rum() {
 
-			docker run -d --name memos -p ${docker_port}:5230 -v /home/docker/memos:/var/opt/memos --restart always ghcr.io/usememos/memos:latest
+			docker run -d --name memos -p ${docker_port}:5230 -v /home/docker/memos:/var/opt/memos --restart=always ghcr.io/usememos/memos:latest
 
 		}
 
@@ -9849,7 +9820,7 @@ while true; do
 
 		docker_rum() {
 
-			docker run -d -p ${docker_port}:8080 --name speedtest --restart always ghcr.io/librespeed/speedtest
+			docker run -d -p ${docker_port}:8080 --name speedtest --restart=always ghcr.io/librespeed/speedtest
 
 		}
 
@@ -9897,7 +9868,7 @@ while true; do
 
 			docker run -d \
 				--name photoprism \
-				--restart always \
+				--restart=always \
 				--security-opt seccomp=unconfined \
 				--security-opt apparmor=unconfined \
 				-p ${docker_port}:2342 \
@@ -10002,7 +9973,7 @@ while true; do
 
 			docker run -d \
 				--name pingvin-share \
-				--restart always \
+				--restart=always \
 				-p ${docker_port}:3000 \
 				-v /home/docker/pingvin-share/data:/opt/app/backend/data \
 				stonith404/pingvin-share
@@ -10128,7 +10099,7 @@ while true; do
 		local docker_img="jrohy/webssh"
 		local docker_port=8040
 		docker_rum() {
-			docker run -d -p ${docker_port}:5032 --restart always --name webssh -e TZ=Asia/Shanghai jrohy/webssh
+			docker run -d -p ${docker_port}:5032 --restart=always --name webssh -e TZ=Asia/Shanghai jrohy/webssh
 		}
 
 		local docker_describe="简易在线ssh连接工具和sftp工具"
@@ -10246,7 +10217,7 @@ while true; do
 				--name registry \
 				-v /home/docker/registry:/var/lib/registry \
 				-e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
-				--restart always \
+				--restart=always \
 				registry:2
 
 		}
@@ -10267,7 +10238,7 @@ while true; do
 
 		docker_rum() {
 
-			docker run -d --name ghproxy --restart always -p ${docker_port}:8080 -v /home/docker/ghproxy/config:/data/ghproxy/config wjqserver/ghproxy:latest
+			docker run -d --name ghproxy --restart=always -p ${docker_port}:8080 -v /home/docker/ghproxy/config:/data/ghproxy/config wjqserver/ghproxy:latest
 
 		}
 
@@ -10383,7 +10354,7 @@ while true; do
 
 		docker_rum() {
 
-			docker run -d --restart always -p ${docker_port}:5000 \
+			docker run -d --restart=always -p ${docker_port}:5000 \
 				-v /home/docker/datastore:/datastore \
 				--name changedetection dgtlmoon/changedetection.io:latest
 
@@ -10438,7 +10409,7 @@ while true; do
 
 		docker_rum() {
 
-			docker run -d -p ${docker_port}:8080 -v /home/docker/ollama:/root/.ollama -v /home/docker/ollama/open-webui:/app/backend/data --name ollama --restart always ghcr.io/open-webui/open-webui:ollama
+			docker run -d -p ${docker_port}:8080 -v /home/docker/ollama:/root/.ollama -v /home/docker/ollama/open-webui:/app/backend/data --name ollama --restart=always ghcr.io/open-webui/open-webui:ollama
 
 		}
 
@@ -10490,7 +10461,7 @@ while true; do
 
 		docker_rum() {
 
-			docker run -d -p ${docker_port}:8080 -v /home/docker/ollama:/root/.ollama -v /home/docker/ollama/open-webui:/app/backend/data --name ollama --restart always ghcr.io/open-webui/open-webui:ollama
+			docker run -d -p ${docker_port}:8080 -v /home/docker/ollama:/root/.ollama -v /home/docker/ollama/open-webui:/app/backend/data --name ollama --restart=always ghcr.io/open-webui/open-webui:ollama
 
 		}
 
@@ -10706,7 +10677,7 @@ while true; do
 
 		docker_rum() {
 
-			docker run -d -p ${docker_port}:8080 -v /home/docker/open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:main
+			docker run -d -p ${docker_port}:8080 -v /home/docker/open-webui:/app/backend/data --name open-webui --restart=always ghcr.io/open-webui/open-webui:main
 
 		}
 
@@ -10750,7 +10721,7 @@ while true; do
 			chmod -R 777 /home/docker/n8n
 
 			docker run -d --name n8n \
-			  --restart always \
+			  --restart=always \
 			  -p ${docker_port}:5678 \
 			  -v /home/docker/n8n:/home/node/.n8n \
 			  -e N8N_HOST=${yuming} \
@@ -10924,7 +10895,7 @@ while true; do
 
 			docker run -d \
 				--name bitwarden \
-				--restart always \
+				--restart=always \
 				-p ${docker_port}:80 \
 				-v /home/docker/bitwarden/data:/data \
 				vaultwarden/server
@@ -12008,7 +11979,7 @@ while true; do
 			  --cap-add SYS_MODULE \
 			  -v /home/docker/wireguard/config:/config \
 			  -v /lib/modules:/lib/modules:ro \
-			  --restart always \
+			  --restart=always \
 			  kjlion/wireguard:alpine
 
 			sleep 3
@@ -12085,8 +12056,34 @@ while true; do
 
 
 
+	100|syncthing)
 
+		local app_id="100"
+		local docker_name="syncthing"
+		local docker_img="syncthing/syncthing:latest"
+		local docker_port=8100
 
+		docker_rum() {
+			docker run -d \
+			  --name=syncthing \
+			  --hostname=my-syncthing \
+			  --restart=always \
+			  -p ${docker_port}:8384 \
+			  -p 22000:22000/tcp \
+			  -p 22000:22000/udp \
+			  -p 21027:21027/udp \
+			  -v /home/docker/syncthing:/var/syncthing \
+			  syncthing/syncthing:latest
+		}
+
+		local docker_describe="开源的点对点文件同步工具，类似于 Dropbox、Resilio Sync，但完全去中心化。"
+		local docker_url="官网介绍: https://github.com/syncthing/syncthing"
+		local docker_use=""
+		local docker_passwd=""
+		local app_size="1"
+		docker_app
+
+		;;
 
 	  b)
 	  	clear
@@ -13029,7 +13026,7 @@ EOF
 								  (crontab -l ; echo "0 0 * * $weekday $newquest") | crontab - > /dev/null 2>&1
 								  ;;
 							  3)
-								  read -e -p "Choose when to perform tasks every day? (Hours, 0-23):" hour
+								  read -e -p "Choose what time to perform tasks every day? (Hours, 0-23):" hour
 								  (crontab -l ; echo "0 $hour * * * $newquest") | crontab - > /dev/null 2>&1
 								  ;;
 							  4)
@@ -13084,7 +13081,7 @@ EOF
 
 						  ;;
 					  2)
-						  read -e -p "Please enter the keywords for parsing content that need to be deleted:" delhost
+						  read -e -p "Please enter the keywords of parsing content that need to be deleted:" delhost
 						  sed -i "/$delhost/d" /etc/hosts
 						  send_stats "Local host parsing and deletion"
 						  ;;
@@ -13099,17 +13096,9 @@ EOF
 		  root_use
 		  send_stats "ssh defense"
 		  while true; do
-			if [ -x "$(command -v fail2ban-client)" ] ; then
-				clear
-				remove fail2ban
-				rm -rf /etc/fail2ban
-			else
-				clear
-				rm -f /path/to/fail2ban/config/fail2ban/jail.d/sshd.conf > /dev/null 2>&1
-				docker exec -it fail2ban fail2ban-client reload > /dev/null 2>&1
-				docker_name="fail2ban"
-				check_docker_app
-				echo -e "SSH Defense Program$check_docker"
+
+				check_f2b_status
+				echo -e "SSH Defense Program$check_f2b_status"
 				echo "fail2ban is an SSH tool to prevent brute force"
 				echo "Official website introduction:${gh_proxy}github.com/fail2ban/fail2ban"
 				echo "------------------------"
@@ -13125,7 +13114,6 @@ EOF
 				read -e -p "Please enter your selection:" sub_choice
 				case $sub_choice in
 					1)
-						install_docker
 						f2b_install_sshd
 
 						cd ~
@@ -13139,19 +13127,19 @@ EOF
 						break_end
 						;;
 					3)
-						tail -f /path/to/fail2ban/config/log/fail2ban/fail2ban.log
+						tail -f /var/log/fail2ban.log
 						break
 						;;
 					9)
-						docker rm -f fail2ban
-						rm -rf /path/to/fail2ban
+						remove fail2ban
+						rm -rf /etc/fail2ban
 						echo "Fail2Ban defense program has been uninstalled"
+						break
 						;;
 					*)
 						break
 						;;
 				esac
-			fi
 		  done
 			  ;;
 
