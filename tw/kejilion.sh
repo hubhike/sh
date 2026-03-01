@@ -1218,7 +1218,7 @@ iptables_panel() {
 add_swap() {
 	local new_swap=$1  # 获取传入的参数
 
-	# 取得目前系統中所有的 swap 分割區
+	# 取得目前系統中所有的 swap 分區
 	local swap_partitions=$(grep -E '^/dev/' /proc/swaps | awk '{print $1}')
 
 	# 遍歷並刪除所有的 swap 分割區
@@ -4739,7 +4739,7 @@ while true; do
 	cat /etc/resolv.conf
 	echo "------------------------"
 	echo ""
-	echo "1. 国外DNS优化: "
+	echo "1. 國外DNS優化:"
 	echo " v4: 1.1.1.1 8.8.8.8"
 	echo " v6: 2606:4700:4700::1111 2001:4860:4860::8888"
 	echo "2. 國內DNS優化:"
@@ -4967,7 +4967,7 @@ dd_xitong() {
 			echo -e "${gl_hong}注意:${gl_bai}重裝有風險失聯，不放心者慎用。重裝預計花費15分鐘，請提前備份資料。"
 			echo -e "${gl_hui}感謝bin456789大佬和leitbogioro大佬的腳本支持！${gl_bai} "
 			echo -e "${gl_hui}bin456789專案地址: https://github.com/bin456789/reinstall${gl_bai}"
-			echo -e "${gl_hui}leitbogioro專案網址: https://github.com/leitbogioro/Tools${gl_bai}"
+			echo -e "${gl_hui}leitbogioro项目地址: https://github.com/leitbogioro/Tools${gl_bai}"
 			echo "------------------------"
 			echo "1. Debian 13                  2. Debian 12"
 			echo "3. Debian 11                  4. Debian 10"
@@ -5136,7 +5136,7 @@ dd_xitong() {
 				;;
 
 			  31)
-				send_stats "重装alpine"
+				send_stats "重裝alpine"
 				dd_xitong_1
 				bash InstallNET.sh -alpine
 				reboot
@@ -5144,7 +5144,7 @@ dd_xitong() {
 				;;
 
 			  32)
-				send_stats "重装arch"
+				send_stats "重裝arch"
 				dd_xitong_3
 				bash reinstall.sh arch
 				reboot
@@ -6619,7 +6619,7 @@ add_task() {
 			;;
 	esac
 
-	echo "请选择同步模式:"
+	echo "請選擇同步模式:"
 	echo "1. 標準模式 (-avz)"
 	echo "2. 刪除目標檔 (-avz --delete)"
 	read -e -p "請選擇 (1/2):" mode
@@ -8103,7 +8103,7 @@ linux_Oracle() {
 				  read -e -p "請輸入CPU佔用百分比範圍（例如10-20） [預設:$DEFAULT_CPU_UTIL]: " cpu_util
 				  local cpu_util=${cpu_util:-$DEFAULT_CPU_UTIL}
 
-				  read -e -p "请输入内存占用百分比 [默认: $DEFAULT_MEM_UTIL]: " mem_util
+				  read -e -p "請輸入記憶體佔用百分比 [預設:$DEFAULT_MEM_UTIL]: " mem_util
 				  local mem_util=${mem_util:-$DEFAULT_MEM_UTIL}
 
 				  read -e -p "請輸入Speedtest間隔時間（秒） [預設:$DEFAULT_SPEEDTEST_INTERVAL]: " speedtest_interval
@@ -9325,8 +9325,8 @@ while true; do
 	  echo -e "${gl_kjlan}49.  ${color49}普羅米修斯(容器監控)${gl_kjlan}50.  ${color50}補貨監控工具"
 	  echo -e "${gl_kjlan}-------------------------"
 	  echo -e "${gl_kjlan}51.  ${color51}PVE開小雞面板${gl_kjlan}52.  ${color52}DPanel容器管理面板"
-	  echo -e "${gl_kjlan}53.  ${color53}llama3聊天AI大模型${gl_kjlan}54.  ${color54}AMH主机建站管理面板"
-	  echo -e "${gl_kjlan}55.  ${color55}FRP内网穿透(服务端) ${gl_huang}★${gl_bai}	         ${gl_kjlan}56.  ${color56}FRP内网穿透(客户端) ${gl_huang}★${gl_bai}"
+	  echo -e "${gl_kjlan}53.  ${color53}llama3聊天AI大模型${gl_kjlan}54.  ${color54}AMH主機建站管理面板"
+	  echo -e "${gl_kjlan}55.  ${color55}FRP內網穿透(服務端)${gl_huang}★${gl_bai}	         ${gl_kjlan}56.  ${color56}FRP內網穿透(客戶端)${gl_huang}★${gl_bai}"
 	  echo -e "${gl_kjlan}57.  ${color57}Deepseek聊天AI大模型${gl_kjlan}58.  ${color58}Dify大模型知識庫${gl_huang}★${gl_bai}"
 	  echo -e "${gl_kjlan}59.  ${color59}NewAPI大模型資產管理${gl_kjlan}60.  ${color60}JumpServer開源堡壘機"
 	  echo -e "${gl_kjlan}-------------------------"
@@ -9378,7 +9378,7 @@ while true; do
 			  # 如果已安裝：顯示 base_name - 描述 [已安裝] (綠色)
 			  echo -e "${gl_kjlan}$base_name${gl_bai} - ${gl_lv}$app_text[已安裝]${gl_bai}"
 		  else
-			  # 如果未安装：正常显示
+			  # 如果未安裝：正常顯示
 			  echo -e "${gl_kjlan}$base_name${gl_bai} - $app_text"
 		  fi
 	  done
@@ -10637,7 +10637,7 @@ while true; do
 
 		local app_id="41"
 		local lujing="[ -d "/www/server/panel" ]"
-		local panelname="耗子麵板"
+		local panelname="耗子面板"
 		local panelurl="官方地址:${gh_proxy}github.com/TheTNB/panel"
 
 		panel_app_install() {
@@ -10766,7 +10766,7 @@ while true; do
 		}
 
 		local docker_describe="使用Go實現的GHProxy，用於加速部分地區Github倉庫的拉取。"
-		local docker_url="官網介紹: https://github.com/WJQSERVER-STUDIO/ghproxy"
+		local docker_url="官网介绍: https://github.com/WJQSERVER-STUDIO/ghproxy"
 		local docker_use=""
 		local docker_passwd=""
 		local app_size="1"
@@ -10831,7 +10831,7 @@ while true; do
 		}
 
 		local docker_describe="這是一個普羅米修斯的主機資料擷取元件，請部署在被監控主機上。"
-		local docker_url="官網介紹: https://github.com/prometheus/node_exporter"
+		local docker_url="官网介绍: https://github.com/prometheus/node_exporter"
 		local docker_use=""
 		local docker_passwd=""
 		local app_size="1"
@@ -10861,7 +10861,7 @@ while true; do
 		}
 
 		local docker_describe="這是一個普羅米修斯的容器資料擷取元件，請部署在被監控主機上。"
-		local docker_url="官網介紹: https://github.com/google/cadvisor"
+		local docker_url="官网介绍: https://github.com/google/cadvisor"
 		local docker_use=""
 		local docker_passwd=""
 		local app_size="1"
@@ -10917,7 +10917,7 @@ while true; do
 		}
 
 		local docker_describe="Docker視覺化面板系統，提供完善的docker管理功能。"
-		local docker_url="官網介紹: https://github.com/donknap/dpanel"
+		local docker_url="官网介绍: https://github.com/donknap/dpanel"
 		local docker_use=""
 		local docker_passwd=""
 		local app_size="1"
@@ -11045,7 +11045,7 @@ while true; do
 		local app_id="59"
 		local app_name="NewAPI"
 		local app_text="新一代大模型閘道與AI資產管理系統"
-		local app_url="官方網站: https://github.com/Calcium-Ion/new-api"
+		local app_url="官方网站: https://github.com/Calcium-Ion/new-api"
 		local docker_name="new-api"
 		local docker_port="8059"
 		local app_size="3"
@@ -11099,7 +11099,7 @@ while true; do
 		local app_id="60"
 		local app_name="JumpServer開源堡壘機"
 		local app_text="是一個開源的特權存取管理 (PAM) 工具，該程式佔用80連接埠不支援新增網域存取了"
-		local app_url="官方介紹: https://github.com/jumpserver/jumpserver"
+		local app_url="官方介绍: https://github.com/jumpserver/jumpserver"
 		local docker_name="jms_web"
 		local docker_port="80"
 		local app_size="2"
@@ -11480,7 +11480,7 @@ while true; do
 
 		local app_name="moontv私有影視"
 		local app_text="免費線上影片搜尋與觀看平台"
-		local app_url="影片介紹: https://github.com/MoonTechLab/LunaTV"
+		local app_url="视频介绍: https://github.com/MoonTechLab/LunaTV"
 		local docker_name="moontv-core"
 		local docker_port="8074"
 		local app_size="2"
@@ -11608,7 +11608,7 @@ while true; do
 		}
 
 		local docker_describe="迅雷你的離線高速BT磁力下載工具"
-		local docker_url="官網介紹: https://github.com/cnk3x/xunlei"
+		local docker_url="官网介绍: https://github.com/cnk3x/xunlei"
 		local docker_use="echo \"手機登入迅雷，再輸入邀請碼，邀請碼: 迅雷牛通\""
 		local docker_passwd=""
 		local app_size="1"
@@ -12620,7 +12620,7 @@ while true; do
 		local app_id="101"
 		local app_name="AI影片產生工具"
 		local app_text="MoneyPrinterTurbo是一款使用AI大模型合成高清短影片的工具"
-		local app_url="官方網站: https://github.com/harry0703/MoneyPrinterTurbo"
+		local app_url="官方网站: https://github.com/harry0703/MoneyPrinterTurbo"
 		local docker_name="moneyprinterturbo"
 		local docker_port="8101"
 		local app_size="3"
@@ -12688,7 +12688,7 @@ while true; do
 		local app_id="103"
 		local app_name="Umami網站統計工具"
 		local app_text="開源、輕量、隱私友善的網站分析工具，類似GoogleAnalytics。"
-		local app_url="官方網站: https://github.com/umami-software/umami"
+		local app_url="官方网站: https://github.com/umami-software/umami"
 		local docker_name="umami-umami-1"
 		local docker_port="8103"
 		local app_size="1"
@@ -12816,7 +12816,7 @@ discourse,yunsou,ahhhhfs,nsgame,gying" \
 		}
 
 		local docker_describe="PanSou是一個高效能的網盤資源搜尋API服務。"
-		local docker_url="官網介紹: https://github.com/fish2018/pansou"
+		local docker_url="官网介绍: https://github.com/fish2018/pansou"
 		local docker_use=""
 		local docker_passwd=""
 		local app_size="1"
@@ -12831,7 +12831,7 @@ discourse,yunsou,ahhhhfs,nsgame,gying" \
 		local app_id="108"
 		local app_name="LangBot聊天機器人"
 		local app_text="是一個開源的大語言模式原生即時通訊機器人開發平台"
-		local app_url="官方網站: https://github.com/langbot-app/LangBot"
+		local app_url="官方网站: https://github.com/langbot-app/LangBot"
 		local docker_name="langbot_plugin_runtime"
 		local docker_port="8108"
 		local app_size="1"
@@ -12888,7 +12888,7 @@ discourse,yunsou,ahhhhfs,nsgame,gying" \
 		}
 
 		local docker_describe="是一個適用於個人或小型團隊的線上網盤程式。"
-		local docker_url="官網介紹: https://github.com/zfile-dev/zfile"
+		local docker_url="官网介绍: https://github.com/zfile-dev/zfile"
 		local docker_use=""
 		local docker_passwd=""
 		local app_size="1"
@@ -13016,7 +13016,7 @@ discourse,yunsou,ahhhhfs,nsgame,gying" \
 		}
 
 		local docker_describe="是一個運行在 Docker 中的 Firefox 瀏覽器，支援透過網頁直接存取桌面版瀏覽器介面。"
-		local docker_url="專案地址: https://github.com/jlesage/docker-firefox"
+		local docker_url="项目地址: https://github.com/jlesage/docker-firefox"
 		local docker_use=""
 		local docker_passwd=""
 		local app_size="1"
@@ -13596,7 +13596,7 @@ EOF
 						send_stats "SSH連接埠已修改"
 						new_ssh_port
 					elif [[ $new_port -eq 0 ]]; then
-						send_stats "退出SSH連接埠修改"
+						send_stats "退出SSH埠修改"
 						break
 					else
 						echo "連接埠號碼無效，請輸入1到65535之間的數字。"
@@ -14691,7 +14691,7 @@ linux_file() {
 				send_stats "壓縮檔案/目錄"
 				;;
 			22) # 解压文件/目录
-				read -e -p "請輸入要解壓縮的檔名 (.tar.gz):" filename
+				read -e -p "請輸入要解壓縮的檔案名稱 (.tar.gz):" filename
 				install tar
 				tar -xzvf "$filename" && echo "已解壓縮$filename" || echo "解壓縮失敗"
 				send_stats "解壓縮檔案/目錄"
